@@ -46,10 +46,13 @@ class Api
      */
     protected function rpcCall($method, $params = [], $loginRequired = true) #that will make ecery think shorter
     {
-        if($loginRequired && !$this->getStarFace()->isLoggedIn()) {
+        if ($loginRequired && !$this->getStarFace()->isLoggedIn()) {
             throw new NotLoggedInException();
         }
 
-        return $this->getClient()->call($method, $params);
+        $response = $this->getClient()->call($method, $params);
+        $this->getStarFace()->updateConnectionTime();
+
+        return $response;
     }
-} 
+}

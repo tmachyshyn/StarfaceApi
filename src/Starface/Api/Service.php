@@ -2,7 +2,6 @@
 
 namespace Starface\Api;
 
-
 class Service extends Api
 {
     const METHOD_SUBSCRIBE_EVENT = 'ucp.v22.requests.service.subscribeEvents';
@@ -29,4 +28,4 @@ class Service extends Api
     {
         return $this->rpcCall(self::METHOD_GET_PROVIDED_EVENTS);
     }
-} 
+}

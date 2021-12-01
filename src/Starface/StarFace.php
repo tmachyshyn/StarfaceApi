@@ -1,7 +1,7 @@
 <?php
 namespace Starface;
 
-use fXmlRpc\Transport\GuzzleBridge;
+use fXmlRpc\Transport\Guzzle4Bridge;
 use GuzzleHttp\Client;
 use Starface\Api\CallRequests;
 use Starface\Api\Connection;
@@ -22,17 +22,26 @@ class StarFace
     /** @var \GuzzleHttp\Client */
     private $guzzle;
 
-    public function __construct($id, $pass, $baseUrl)
+    private $data = [];
+
+    private $lastConnectionTime = 0;
+
+    public function __construct($id, $authToken, $baseUrl, $callback = null)
     {
-        $this->authToken = md5($id.'*'.$pass);
+        $this->authToken = $authToken;
         $this->id = $id;
         $this->baseUrl = $baseUrl;
-        $this->url = $this->baseUrl.'/xml-rpc?de.vertico.starface.user='.$this->id.'&de.vertico.starface.auth='.$this->authToken;
+        $this->url = $this->baseUrl .
+            '/xml-rpc?de.vertico.starface.user=' .
+            $this->id .
+            '&de.vertico.starface.auth=' .
+            $this->authToken .
+            $this->getCallbackParams($callback);
 
         $this->guzzle = new Client();
         $this->client = new \fXmlRpc\Client(
             $this->url,
-            new GuzzleBridge($this->guzzle)
+            new Guzzle4Bridge($this->guzzle)
         );
     }
 
@@ -43,30 +52,37 @@ class StarFace
     }
 
     /**
-     * @return $this
+     * @return bool
      */
     public function login()
     {
         $this->isLoggedIn = (bool) $this->getConnectionApi()->login();
-        return $this;
+
+        if (isset($GLOBALS['log'])) {
+            $GLOBALS['log']->debug('Starface: Callback URL [' . $this->url . '].');
+        }
+
+        return $this->isLoggedIn;
     }
 
     /**
-     * @return $this
+     * @return bool
      */
     public function logout()
     {
-        $this->isLoggedIn = !$this->getConnectionApi()->login();
-        return $this;
+        $this->isLoggedIn = !$this->getConnectionApi()->logout();
+
+        return $this->isLoggedIn;
     }
 
     /**
-     * @return $this
+     * @return bool
      */
     public function keepAlive()
     {
-        $this->getConnectionApi()->keepAlive();
-        return $this;
+        $this->isLoggedIn = $this->getConnectionApi()->keepAlive();
+
+        return (bool) $this->isLoggedIn;
     }
 
     /**
@@ -74,42 +90,88 @@ class StarFace
      */
     public function isLoggedIn()
     {
+        $timeDiff = time() - $this->getLastConnectionTime();
+
+        if (!$this->isLoggedIn || $timeDiff >= 50) {
+            $this->isLoggedIn = true;
+            $this->isLoggedIn = (bool) $this->getConnectionApi()->keepAlive();
+        }
+
         return (bool) $this->isLoggedIn;
+    }
+
+    protected function get($name)
+    {
+        $name = ucfirst($name);
+
+        if (!isset($this->data[$name])) {
+            $className = '\\Starface\\Api\\' . $name;
+            if (!class_exists($className)) {
+                throw new Exception('StarFace: Class ['.$className.'] does not exists.');
+            }
+
+            $this->data[$name] = new $className($this->getClient(), $this);
+        }
+
+        return $this->data[$name];
     }
 
     /** @return Connection */
     protected function getConnectionApi()
     {
-        return new Connection($this->getClient(), $this);
+        return $this->get('Connection');
     }
 
     /** @return CallRequests */
     public function getCallApi()
     {
-        return new CallRequests($this->getClient(), $this);
+        return $this->get('CallRequests');
     }
 
     /** @return PhoneRequests */
     public function getPhoneApi()
     {
-        return new PhoneRequests($this->getClient(), $this);
+        return $this->get('PhoneRequests');
     }
 
     /** @return Service */
     public function getServiceApi()
     {
-        return new PhoneRequests($this->getClient(), $this);
+        return $this->get('Service');
     }
 
     /** @return UserStateRequests */
     public function getUserStateApi()
     {
-        return new UserStateRequests($this->getClient(), $this);
+        return $this->get('UserStateRequests');
     }
 
     /** @return GroupRequests */
     public function getGroupApi()
     {
-        return new GroupRequests($this->getClient(), $this);
+        return $this->get('GroupRequests');
+    }
+
+    protected function getCallbackParams($params)
+    {
+        $url = '';
+
+        if (!empty($params)) {
+            foreach ($params as $name => $value) {
+                $url .= '&de.vertico.starface.callback.' . $name . '=' . urlencode($value);
+            }
+        }
+
+        return $url;
+    }
+
+    protected function getLastConnectionTime()
+    {
+        return $this->lastConnectionTime;
+    }
+
+    public function updateConnectionTime()
+    {
+        $this->lastConnectionTime = time();
     }
 }

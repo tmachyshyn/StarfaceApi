@@ -2,7 +2,6 @@
 
 namespace Starface\Api;
 
-
 class PhoneRequests extends Api
 {
     const METHOD_GET_AVAILABLE_DISPLAY_NUMBERS = 'ucp.v22.requests.phone.getAvailableDisplayNumbers';
@@ -28,5 +27,10 @@ class PhoneRequests extends Api
     public function getPrimaryPhoneId()
     {
         return $this->rpcCall(self::METHOD_GET_PRIMARY_PHONE_ID);
+    }
+
+    public function getAvailableDisplayNumbers()
+    {
+        return $this->rpcCall(self::METHOD_GET_AVAILABLE_DISPLAY_NUMBERS);
     }
 }

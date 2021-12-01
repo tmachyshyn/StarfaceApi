@@ -15,7 +15,7 @@ class Connection extends Api
      */
     public function login()
     {
-        return boolval($this->rpcCall(self::METHOD_LOGOUT, [], false));
+        return (bool) $this->rpcCall(self::METHOD_LOGIN, [], false);
     }
 
     /**
@@ -23,7 +23,7 @@ class Connection extends Api
      */
     public function logout()
     {
-        return boolval($this->rpcCall(self::METHOD_LOGOUT));
+        return (bool) $this->rpcCall(self::METHOD_LOGOUT);
     }
 
     /**
@@ -31,6 +31,6 @@ class Connection extends Api
      */
     public function keepAlive()
     {
-        return boolval($this->rpcCall(self::METHOD_KEEP_ALIVE));
+        return (bool) $this->rpcCall(self::METHOD_KEEP_ALIVE, [], false);
     }
 }

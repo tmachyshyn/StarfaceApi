@@ -2,7 +2,6 @@
 
 namespace Starface\Api;
 
-
 use Starface\Response\CallState;
 
 class CallRequests extends Api
@@ -11,7 +10,7 @@ class CallRequests extends Api
     const METHOD_GET_CALL_STATE = 'ucp.v22.requests.call.getCallState';
     const METHOD_PLACE_CALL_WITH_PHONE = 'ucp.v22.requests.call.placeCallWithPhone';
     const METHOD_HANG_UP_CALL = 'ucp.v22.requests.call.hangupCall';
-
+    const METHOD_RECEIVE_CALL_STATE = 'ucp.v22.events.call.receiveCallState';
 
     /**
      * @return string[]
@@ -28,8 +27,9 @@ class CallRequests extends Api
      */
     public function getCallState($callId)
     {
-        $d = $this->rpcCall(self::METHOD_GET_CALL_STATE, array($callId), true);
-        return new CallState();
+        $data = $this->rpcCall(self::METHOD_GET_CALL_STATE, array($callId), true);
+
+        return new CallState($data);
     }
 
     /**
@@ -55,4 +55,24 @@ class CallRequests extends Api
         return $this->rpcCall(self::METHOD_HANG_UP_CALL, [$callId]);
     }
 
-} 
+    public function receiveCallState()
+    {
+        $payload = file_get_contents('php://input');
+        $data = $this->parseXmlRequest($payload);
+
+        return new CallState($data);
+    }
+
+    protected function parseXmlRequest($xmlData)
+    {
+        $xmlData = (string) $xmlData;
+        $xmlData = preg_replace('/methodCall>/', 'methodResponse>', $xmlData);
+        $xmlData = preg_replace('/<methodName>.*?<\/methodName>/', '', $xmlData);
+
+        $xmlReaderParser = new \fXmlRpc\Parser\XmlReaderParser();
+
+        $isFault = true;
+        return $xmlReaderParser->parse($xmlData, $isFault);
+    }
+
+}

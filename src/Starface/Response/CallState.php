@@ -2,7 +2,6 @@
 
 namespace Starface\Response;
 
-
 class CallState
 {
     protected $callerNumber;
@@ -13,6 +12,15 @@ class CallState
     protected $calledName;
     protected $state;
     protected $callerName;
+
+    public function __construct(array $data = null)
+    {
+        if (isset($data)) {
+            foreach ($data as $name => $value) {
+                $this->$name = $value;
+            }
+        }
+    }
 
     /**
      * @return mixed
