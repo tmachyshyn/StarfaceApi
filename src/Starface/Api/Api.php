@@ -10,13 +10,19 @@ class Api
 {
     /** @var Client */
     private $client;
+
     /** @var StarFace */
     private $starFace;
 
-    public function __construct(Client $client, StarFace $starFace)
+    private $defaultApiVersion = 'v22';
+
+    private $apiVersion;
+
+    public function __construct(Client $client, StarFace $starFace, $apiVersion = 'v30')
     {
         $this->client = $client;
         $this->starFace = $starFace;
+        $this->apiVersion = $apiVersion;
     }
     /**
      * @return \Starface\StarFace
@@ -50,9 +56,24 @@ class Api
             throw new NotLoggedInException();
         }
 
-        $response = $this->getClient()->call($method, $params);
+        $normalizedMethod = $this->getNormalizedMethod($method);
+
+        $response = $this->getClient()->call($normalizedMethod, $params);
         $this->getStarFace()->updateConnectionTime();
 
         return $response;
+    }
+
+    private function getNormalizedMethod($method)
+    {
+        if ($this->defaultApiVersion == $this->apiVersion) {
+            return $method;
+        }
+
+        return str_replace(
+            '.' . $this->defaultApiVersion . '.',
+            '.' . $this->apiVersion . '.',
+            $method
+        );
     }
 }

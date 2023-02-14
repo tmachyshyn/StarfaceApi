@@ -26,11 +26,20 @@ class StarFace
 
     private $lastConnectionTime = 0;
 
-    public function __construct($id, $authToken, $baseUrl, $callback = null)
+    private $apiVersion;
+
+    public function __construct(
+        $id,
+        $authToken,
+        $baseUrl,
+        $callback = null,
+        $apiVersion = 'v30'
+    )
     {
         $this->authToken = $authToken;
         $this->id = $id;
         $this->baseUrl = $baseUrl;
+
         $this->url = $this->baseUrl .
             '/xml-rpc?de.vertico.starface.user=' .
             $this->id .
@@ -39,10 +48,13 @@ class StarFace
             $this->getCallbackParams($callback);
 
         $this->guzzle = new Client();
+
         $this->client = new \fXmlRpc\Client(
             $this->url,
             new Guzzle4Bridge($this->guzzle)
         );
+
+        $this->apiVersion = $apiVersion;
     }
 
     /** @return \fXmlRpc\Client */
@@ -110,7 +122,11 @@ class StarFace
                 throw new Exception('StarFace: Class ['.$className.'] does not exists.');
             }
 
-            $this->data[$name] = new $className($this->getClient(), $this);
+            $this->data[$name] = new $className(
+                $this->getClient(),
+                $this,
+                $this->apiVersion
+            );
         }
 
         return $this->data[$name];
