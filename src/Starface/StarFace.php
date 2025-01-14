@@ -1,66 +1,54 @@
 <?php
 namespace Starface;
 
-use fXmlRpc\Transport\Guzzle4Bridge;
-use GuzzleHttp\Client;
-use Starface\Api\CallRequests;
+use Exception;
+use Starface\Api\Service;
+use Starface\Client\Client;
+use fXmlRpc\ClientInterface;
 use Starface\Api\Connection;
+use Starface\Api\CallRequests;
 use Starface\Api\GroupRequests;
 use Starface\Api\PhoneRequests;
-use Starface\Api\Service;
 use Starface\Api\UserStateRequests;
 
 class StarFace
 {
-    private $id;
-    private $authToken;
-    private $baseUrl;
-    /** @var bool */
-    private $isLoggedIn = false;
-    /** @var  \fXmlRpc\Client */
-    private $client;
-    /** @var \GuzzleHttp\Client */
-    private $guzzle;
+    private string $id;
 
-    private $data = [];
+    private string $authToken;
 
-    private $lastConnectionTime = 0;
+    private string $baseUrl;
 
-    private $apiVersion;
+    private bool $isLoggedIn = false;
+
+    private ClientInterface $client;
+
+    private array $data = [];
+
+    private int $lastConnectionTime = 0;
+
+    private string $apiVersion;
+
+    private string $url;
 
     public function __construct(
-        $id,
-        $authToken,
-        $baseUrl,
+        string $id,
+        string $authToken,
+        string $baseUrl,
         $callback = null,
-        $apiVersion = 'v30'
-    )
-    {
-        $this->authToken = $authToken;
+        ?string $apiVersion = 'v30'
+    ) {
         $this->id = $id;
         $this->baseUrl = $baseUrl;
+        $this->authToken = $authToken;
+        $this->apiVersion = $apiVersion;
 
         $this->url = $this->baseUrl .
-            '/xml-rpc?de.vertico.starface.user=' .
-            $this->id .
-            '&de.vertico.starface.auth=' .
-            $this->authToken .
+            '/xml-rpc?de.vertico.starface.user=' . $this->id .
+            '&de.vertico.starface.auth=' . $this->authToken .
             $this->getCallbackParams($callback);
 
-        $this->guzzle = new Client();
-
-        $this->client = new \fXmlRpc\Client(
-            $this->url,
-            new Guzzle4Bridge($this->guzzle)
-        );
-
-        $this->apiVersion = $apiVersion;
-    }
-
-    /** @return \fXmlRpc\Client */
-    private function getClient()
-    {
-        return $this->client;
+        $this->client = new Client($this->url);
     }
 
     /**
@@ -118,12 +106,13 @@ class StarFace
 
         if (!isset($this->data[$name])) {
             $className = '\\Starface\\Api\\' . $name;
+
             if (!class_exists($className)) {
-                throw new Exception('StarFace: Class ['.$className.'] does not exists.');
+                throw new Exception('StarFace: Class [' . $className . '] does not exists.');
             }
 
             $this->data[$name] = new $className(
-                $this->getClient(),
+                $this->client,
                 $this,
                 $this->apiVersion
             );
