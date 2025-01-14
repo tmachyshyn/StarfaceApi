@@ -4,165 +4,128 @@ namespace Starface\Response;
 
 class CallState
 {
-    protected $callerNumber;
-    protected $calledNumber;
-    protected $timestamp;
-    protected $id;
-    protected $groupID;
-    protected $calledName;
-    protected $state;
-    protected $callerName;
+    private array $data = [];
 
     public function __construct(array $data = null)
     {
-        if (isset($data)) {
-            foreach ($data as $name => $value) {
-                $this->$name = $value;
-            }
+        if (empty($data)) {
+            return;
         }
+
+        $this->data = $data;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getCallerNumber()
+    public function getCallerNumber(): ?string
     {
-        return $this->callerNumber;
+        return $this->data['callerNumber'] ?? null;
     }
 
-    /**
-     * @param mixed $callerNumber
-     * @return $this
-     */
-    public function setCallerNumber($callerNumber)
+    public function setCallerNumber(string $callerNumber): self
     {
-        $this->callerNumber = $callerNumber;
+        $this->data['calledNumber'] = $callerNumber;
+
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getCalledNumber()
+    public function getCalledNumber(): ?string
     {
-        return $this->calledNumber;
+        return $this->data['calledNumber'] ?? null;
     }
 
-    /**
-     * @param mixed $calledNumber
-     * @return $this
-     */
-    public function setCalledNumber($calledNumber)
+    public function setCalledNumber(string $calledNumber): self
     {
-        $this->calledNumber = $calledNumber;
+        $this->data['calledNumber'] = $calledNumber;
+
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getTimestamp()
+    public function getTimestamp(): ?string
     {
-        return $this->timestamp;
+        $timestamp = $this->data['timestamp'] ?? null;
+
+        if (empty($timestamp)) {
+            return null;
+        }
+
+        return $timestamp;
     }
 
-    /**
-     * @param mixed $timestamp
-     * @return $this
-     */
-    public function setTimestamp($timestamp)
+    public function setTimestamp(string $timestamp): self
     {
-        $this->timestamp = $timestamp;
+        $this->data['timestamp'] = $timestamp;
+
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getId()
+    public function getId(): ?string
     {
-        return $this->id;
+        return $this->data['id'] ?? null;
     }
 
-    /**
-     * @param mixed $id
-     * @return $this
-     */
-    public function setId($id)
+    public function setId(string $id): self
     {
-        $this->id = $id;
+        $this->data['id'] = $id;
+
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getGroupID()
+    public function getGroupID(): ?string
     {
-        return $this->groupID;
+        $groupId = $this->data['groupID'] ?? null;
+
+        if (empty($groupId)) {
+            return null;
+        }
+
+        return $groupId;
     }
 
-    /**
-     * @param mixed $groupID
-     * @return $this
-     */
-    public function setGroupID($groupID)
+    public function setGroupID($groupId): self
     {
-        $this->groupID = $groupID;
+        $this->data['groupID'] = $groupId;
+
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getCalledName()
+    public function getCalledName(): ?string
     {
-        return $this->calledName;
+        return $this->data['calledName'] ?? null;
     }
 
-    /**
-     * @param mixed $calledName
-     * @return $this
-     */
-    public function setCalledName($calledName)
+    public function setCalledName(string $calledName): self
     {
-        $this->calledName = $calledName;
+        $this->data['calledName'] = $calledName;
+
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getState()
+    public function getState(): ?string
     {
-        return $this->state;
+        $state = $this->data['state'] ?? null;
+
+        if (empty($state)) {
+            return null;
+        }
+
+        return strtoupper($state);
     }
 
-    /**
-     * @param mixed $state
-     * @return $this
-     */
-    public function setState($state)
+    public function setState(string $state): self
     {
-        $this->state = $state;
+        $this->data['state'] = $state;
+
         return $this;
     }
 
-    /**
-     * @return mixed
-     */
-    public function getCallerName()
+    public function getCallerName(): ?string
     {
-        return $this->callerName;
+        return $this->data['callerName'] ?? null;
     }
 
-    /**
-     * @param mixed $callerName
-     * @return $this
-     */
-    public function setCallerName($callerName)
+    public function setCallerName(string $callerName): self
     {
-        $this->callerName = $callerName;
+        $this->data['callerName'] = $callerName;
+
         return $this;
     }
 }
