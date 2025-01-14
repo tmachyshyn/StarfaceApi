@@ -128,4 +128,9 @@ class CallState
 
         return $this;
     }
+
+    public function toRaw(): array
+    {
+        return $this->data;
+    }
 }
