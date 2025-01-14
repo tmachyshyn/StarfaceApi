@@ -50,7 +50,7 @@ class Api
      * @throws NotLoggedInException
      * @return mixed|null|string
      */
-    protected function rpcCall($method, $params = [], $loginRequired = true) #that will make ecery think shorter
+    protected function rpcCall($method, $params = [], $loginRequired = true) #that will make every think shorter
     {
         if ($loginRequired && !$this->getStarFace()->isLoggedIn()) {
             throw new NotLoggedInException();
@@ -59,6 +59,7 @@ class Api
         $normalizedMethod = $this->getNormalizedMethod($method);
 
         $response = $this->getClient()->call($normalizedMethod, $params);
+
         $this->getStarFace()->updateConnectionTime();
 
         return $response;
