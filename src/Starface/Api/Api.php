@@ -2,44 +2,29 @@
 
 namespace Starface\Api;
 
-use fXmlRpc\Client;
-use Starface\Exception\NotLoggedInException;
 use Starface\StarFace;
+use fXmlRpc\ClientInterface;
+use Starface\Exception\NotLoggedInException;
 
 class Api
 {
-    /** @var Client */
-    private $client;
+    private ClientInterface $client;
 
-    /** @var StarFace */
-    private $starFace;
+    private StarFace $starFace;
 
-    private $defaultApiVersion = 'v22';
+    private string $apiVersion;
 
-    private $apiVersion;
+    private string $defaultApiVersion = 'v22';
 
-    public function __construct(Client $client, StarFace $starFace, $apiVersion = 'v30')
-    {
+    public function __construct(
+        ClientInterface $client,
+        StarFace $starFace,
+        string $apiVersion = 'v30'
+    ) {
         $this->client = $client;
         $this->starFace = $starFace;
         $this->apiVersion = $apiVersion;
     }
-    /**
-     * @return \Starface\StarFace
-     */
-    protected function getStarFace()
-    {
-        return $this->starFace;
-    }
-
-    /**
-     * @return \fXmlRpc\Client
-     */
-    protected function getClient()
-    {
-        return $this->client;
-    }
-
 
     /**
      * This is the main request function to use!!
@@ -50,17 +35,17 @@ class Api
      * @throws NotLoggedInException
      * @return mixed|null|string
      */
-    protected function rpcCall($method, $params = [], $loginRequired = true) #that will make every think shorter
+    protected function rpcCall($method, $params = [], $loginRequired = true)
     {
-        if ($loginRequired && !$this->getStarFace()->isLoggedIn()) {
+        if ($loginRequired && !$this->starFace->isLoggedIn()) {
             throw new NotLoggedInException();
         }
 
         $normalizedMethod = $this->getNormalizedMethod($method);
 
-        $response = $this->getClient()->call($normalizedMethod, $params);
+        $response = $this->client->call($normalizedMethod, $params);
 
-        $this->getStarFace()->updateConnectionTime();
+        $this->starFace->updateConnectionTime();
 
         return $response;
     }
